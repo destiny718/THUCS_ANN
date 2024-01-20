@@ -1,0 +1,92 @@
+########################
+# Additional Files
+########################
+# README.md
+# linear_interpolation.py
+
+########################
+# Filled Code
+########################
+# ../codes/GAN/trainer.py:1
+        output_real = self._netD(real_imgs)
+        loss_D_real = BCE_criterion(output_real, torch.full_like(output_real, 1, device=output_real.device))
+        D_x = output_real.mean()
+        loss_D_real.backward()
+
+# ../codes/GAN/trainer.py:2
+        output_fake = self._netD(fake_imgs)
+        loss_D_fake = BCE_criterion(output_fake, torch.full_like(output_fake, 0, device=output_fake.device))
+        D_G_z1 = output_fake.mean()
+        loss_D_fake.backward(retain_graph=True)
+
+# ../codes/GAN/trainer.py:3
+        output_fake_for_G = self._netD(fake_imgs)
+        loss_G = BCE_criterion(output_fake_for_G, torch.full_like(output_fake_for_G, 1, device=output_fake_for_G.device))
+        D_G_z2 = output_fake_for_G.mean()
+
+# ../codes/GAN/GAN.py:1
+            nn.ConvTranspose2d(in_channels=latent_dim, out_channels=hidden_dim*4, kernel_size=4, stride=1, padding=0),
+            nn.BatchNorm2d(num_features=hidden_dim*4),
+            nn.ReLU(),
+            nn.ConvTranspose2d(in_channels=hidden_dim*4, out_channels=hidden_dim*2, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(num_features=hidden_dim*2),
+            nn.ReLU(),
+            nn.ConvTranspose2d(in_channels=hidden_dim*2, out_channels=hidden_dim, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(num_features=hidden_dim),
+            nn.ReLU(),
+            nn.ConvTranspose2d(in_channels=hidden_dim, out_channels=num_channels, kernel_size=4, stride=2, padding=1),
+            nn.Tanh()
+
+            # # mlp implementation
+            # nn.Linear(latent_dim, 4*hidden_dim),
+            # nn.BatchNorm1d(4*hidden_dim),
+            # nn.ReLU(),
+            # nn.Linear(4*hidden_dim, 2*hidden_dim),
+            # nn.BatchNorm1d(2*hidden_dim),
+            # nn.ReLU(),
+            # nn.Linear(2*hidden_dim, hidden_dim),
+            # nn.BatchNorm1d(hidden_dim),
+            # nn.ReLU(),
+            # nn.Linear(hidden_dim, num_channels * 32 * 32),
+            # nn.Tanh(),
+
+
+########################
+# References
+########################
+
+########################
+# Other Modifications
+########################
+# _codes/GAN/trainer.py -> ../codes/GAN/trainer.py
+# 111 +                 # # mlp implementation
+# 112 +                 # imgs = make_grid(self._netG(fixed_noise)).view(-1, 1, 32, 32) * 0.5 + 0.5
+# _codes/GAN/main.py -> ../codes/GAN/main.py
+# 31 -     config = 'z-{}_batch-{}_num-train-steps-{}'.format(args.latent_dim, args.batch_size, args.num_training_steps)
+# 31 ?               ^
+# 31 +     config = 'ablationReLU_latent-{}_hidden-{}_batch-{}_num-train-steps-{}'.format(args.latent_dim, args.generator_hidden_dim, args.batch_size, args.num_training_steps)
+# 31 ?               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                                                              +++++++++++++++++++++++++++
+# _codes/GAN/GAN.py -> ../codes/GAN/GAN.py
+# 65 +         # # mlp implementation
+# 66 +         # z = z.view(-1, self.latent_dim)
+# 95 +             # # ablation
+# 96 +             # nn.ReLU(),
+# 101 +             # # ablation
+# 102 +             # nn.ReLU(),
+# 107 +             # # ablation
+# 108 +             # nn.ReLU(),
+# 112 +
+# 113 +             # # mlp implementation
+# 114 +             # nn.Linear(num_channels * 32 * 32, hidden_dim),
+# 115 +             # nn.LeakyReLU(0.2, inplace=True),
+# 116 +             # nn.Linear(hidden_dim, 2 * hidden_dim),
+# 117 +             # nn.Dropout(0.2),
+# 118 +             # nn.LeakyReLU(0.2, inplace=True),
+# 119 +             # nn.Linear(2 * hidden_dim, 4 * hidden_dim),
+# 120 +             # nn.Dropout(0.2),
+# 121 +             # nn.LeakyReLU(0.2, inplace=True),
+# 122 +             # nn.Linear(4 * hidden_dim, 1),
+# 123 +             # nn.Sigmoid(),
+# 127 +         # # mlp implementation
+# 128 +         # x = x.view(-1, self.num_channels * 32 * 32)
+

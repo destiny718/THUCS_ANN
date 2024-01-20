@@ -1,0 +1,135 @@
+########################
+# Additional Files
+########################
+# run_mlp_pipeline.py
+
+########################
+# Filled Code
+########################
+# ../codes/loss.py:1
+        return (np.sum((input - target) ** 2)) / input.shape[0]
+
+# ../codes/loss.py:2
+        return 2 * (input - target) / input.shape[0]
+
+# ../codes/loss.py:3
+        exp_input = np.exp(input)
+        sum_exp = np.sum(exp_input, axis=-1, keepdims=True)
+        self.softmax_output = exp_input / sum_exp
+        loss = np.sum(-np.log(self.softmax_output) * target, axis=-1).mean()
+        return loss
+
+# ../codes/loss.py:4
+        return (self.softmax_output - target) / input.shape[0]
+
+# ../codes/loss.py:5
+        margin_input = np.maximum(0, self.margin - (input * target) + input)
+        loss = (margin_input.sum(axis=-1) - self.margin).mean()
+        return loss
+
+# ../codes/loss.py:6
+        grad = ((self.margin - (input * target) + input) > 0).astype('float')
+        grad -= target * grad.sum(axis=-1, keepdims=True)
+        return grad / input.shape[0]
+
+# ../codes/loss.py:7
+        exp_input = np.exp(input)
+        sum_exp = np.sum(exp_input, axis=-1, keepdims=True)
+        self.softmax_output = exp_input / sum_exp
+        alpha = np.array(self.alpha)
+        alpha_weight = alpha * target + (1 - alpha) * (1 - target)
+        gamma_weight = (1 - self.softmax_output) ** self.gamma
+        loss = np.sum(-np.log(self.softmax_output) * target * alpha_weight * gamma_weight, axis=-1).mean()
+        return loss
+
+# ../codes/loss.py:8
+        # Reference: https://zhuanlan.zhihu.com/p/32631517
+        # Reference: 与薛晗同学（2021010725）讨论实现方法以及alpha参数的选择
+        alpha = np.array(self.alpha)
+        grad = np.zeros_like(input)
+        gamma_grad = ((1 - self.softmax_output) ** (self.gamma - 1)) * (1 - self.softmax_output - self.gamma * self.softmax_output * np.log(self.softmax_output))
+        for i in range(input.shape[0]):
+            # i: batch num
+            t = np.where(target[i] == 1)
+            grad[i] = np.where(target[i] == 1, (gamma_grad * (self.softmax_output - 1))[i][t], (gamma_grad[i][t] * self.softmax_output)[i])
+
+        grad *= (alpha[0] / input.shape[0])
+
+        return grad
+
+# ../codes/layers.py:1
+        self._saved_for_backward(input)
+        output = 1.0507 * np.where(input > 0, input, 1.67326 * (np.exp(input) - 1))
+        return output
+
+# ../codes/layers.py:2
+        input = self._saved_tensor
+        return np.where(input > 0, grad_output * 1.0507, grad_output * 1.0507 * 1.67326 * np.exp(input))
+
+# ../codes/layers.py:3
+        output = input / (1 + np.exp(-input))
+        self._saved_for_backward(input)
+        return output
+
+# ../codes/layers.py:4
+        input = self._saved_tensor
+        sigmoid_input = 1 / (1 + np.exp(-input))
+        # return (1 + np.exp(-input) + input * np.exp(-input)) / (1 + np.exp(-input)) ** 2
+        return grad_output * (sigmoid_input + input * sigmoid_input * (1 - sigmoid_input))
+
+# ../codes/layers.py:5
+        self._saved_for_backward(input)
+        output = 0.5 * input * (1 + np.tanh(np.sqrt(2 / np.pi) * (input + 0.044715 * input ** 3)))
+        return output
+
+# ../codes/layers.py:6
+        # Reference: https://zhuanlan.zhihu.com/p/394465965
+        input = self._saved_tensor
+        sqrt_2, sqrt_pi = np.sqrt(2), np.sqrt(np.pi)
+        return grad_output * 0.5 * (np.tanh((sqrt_2 * (0.044715 * input ** 3 + input)) / sqrt_pi) +
+                ((sqrt_2 * input * (0.134145 * input ** 2 + 1) * ((1 / np.cosh(
+                (sqrt_2 * (0.044715 * input ** 3 + input)) / sqrt_pi)) ** 2)) / sqrt_pi + 1))
+
+# ../codes/layers.py:7
+        self._saved_for_backward(input)
+        return np.matmul(input, self.W) + self.b
+
+# ../codes/layers.py:8
+        input = self._saved_tensor
+        self.grad_W = np.matmul(input.T, grad_output)
+        self.grad_b = np.sum(grad_output, axis=0)
+        grad_input = np.matmul(grad_output, self.W.T)
+        return grad_input
+
+
+########################
+# References
+########################
+# https://zhuanlan.zhihu.com/p/32631517
+# https://zhuanlan.zhihu.com/p/394465965
+# 与薛晗同学（2021010725）讨论实现方法以及alpha参数的选择
+
+########################
+# Other Modifications
+########################
+# _codes/loss.py -> ../codes/loss.py
+# 27 +         self.softmax_output = None
+# 55 -
+# 77 +         else:
+# 78 +             self.alpha = [alpha for _ in range(10)]
+# 80 +         self.softmax_output = None
+# 95 +
+# 115 +
+# _codes/solve_net.py -> ../codes/solve_net.py
+# 22 +
+# 32 +
+# 43 -             loss_list = []
+# 45 +             # loss_list = []
+# 45 ?            ++
+# 44 -             acc_list = []
+# 46 +             # acc_list = []
+# 46 ?            ++
+# 48 +     return (np.mean(loss_list), np.mean(acc_list))
+# 65 +
+# 66 +     return (np.mean(loss_list), np.mean(acc_list))
+

@@ -1,0 +1,3 @@
+- 添加文件`linear_interpolation`用来进行线性插值相关的实验
+- 对`main.py`文件进行小幅度修改以更好使用`tensorboard`。
+- 对`GAN.py`和`trainer.py`添加了一些代码（被注释掉了），分别是做mlp based GAN和ablation study进行的代码修改，每段代码的修改用途都在注释中有体现。

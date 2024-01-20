@@ -1,0 +1,8 @@
+data
+*data
+cifar*
+log
+*.ipynb
+**/__pycache__
+**_test
+checkpoints
